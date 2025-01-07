@@ -22,9 +22,11 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [] = await Promise.all([]);
+  const [categories] = await Promise.all([
+    context.storefront.query(CATEGORIES_QUERY),
+  ]);
 
-  return {};
+  return {categories: categories};
 }
 
 /**
@@ -33,71 +35,179 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
-  const products = context.storefront.query(PRODUCTS_QUERY).catch((error) => {
-    // Log query errors, but don't throw them so the page can still render
-    console.error(error);
-    return null;
-  });
-
-  return {
-    products,
-  };
+  return {};
 }
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div className="home">
-      <Products products={data.products} />
+    <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
+      <Categories categories={data.categories} />
+      <div style={{borderLeft: '1px solid grey'}} />
+      <AllCategories categories={data.categories} />
     </div>
   );
 }
 
-function Products({products}: {products: Promise<ProductsQuery | null>}) {
+const FIXED_IMAGE_SIZE = 75;
+
+function tailName(name: string): string {
+  const nameParts = name.split('>');
+  return nameParts[nameParts.length - 1].trim();
+}
+
+function Categories({categories}: {categories: Promise<any>}) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Await resolve={categories}>
+        {(categoriesResponse) => {
+          return (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                minWidth: 200,
+                gap: 10,
+              }}
+            >
+              <h2>Choose a Category</h2>
+              <div style={{borderTop: '1px solid grey'}} />
+              {categoriesResponse.categories.tier1ChildCategories.references.nodes.map(
+                (child) => {
+                  return (
+                    <Link key={child.id} to={`/categories/${child.name.value}`}>
+                      {tailName(child.name.value)}
+                    </Link>
+                  );
+                },
+              )}
+            </div>
+          );
+        }}
+      </Await>
+    </Suspense>
+  );
+}
+
+function Tier3Category({tier3Category}: any) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+      }}
+    >
+      <Image
+        data={{url: tier3Category.image.reference.image.url}}
+        aspectRatio="1/1"
+        width={FIXED_IMAGE_SIZE}
+        height={FIXED_IMAGE_SIZE}
+        style={{filter: 'grayscale(100%)'}}
+      />
+      <h2>{tailName(tier3Category.name.value)}</h2>
+    </div>
+  );
+}
+
+function Tier2Category({tier2Category}: any) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        width:
+          tier2Category.tier3ChildCategories == null
+            ? FIXED_IMAGE_SIZE
+            : undefined,
+      }}
+    >
+      <Link key={tier2Category.id} to={`/products/${tier2Category.handle}`}>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          {tier2Category.tier3ChildCategories == null ? (
+            <Image
+              data={{url: tier2Category.image.reference.image.url}}
+              aspectRatio="1/1"
+              width={FIXED_IMAGE_SIZE}
+              height={FIXED_IMAGE_SIZE}
+              style={{filter: 'grayscale(100%)'}}
+            />
+          ) : null}
+          <span style={{width: FIXED_IMAGE_SIZE, fontSize: 12}}>
+            {tailName(tier2Category.name.value)}
+          </span>
+        </div>
+      </Link>
+      {tier2Category.tier3ChildCategories == null
+        ? null
+        : tier2Category.childCategories.references.nodes.map(
+            (tier3Category) => {
+              return <Tier3Category tier3Category={tier3Category} />;
+            },
+          )}
+    </div>
+  );
+}
+
+function Tier1Category({tier1Category}: any) {
+  return (
+    <div
+      key={tier1Category.id}
+      style={{display: 'flex', flexDirection: 'column', gap: 10}}
+    >
+      {tier1Category.tier2ChildCategories == null ? (
+        <Image
+          data={{url: tier1Category.image.reference.image.url}}
+          aspectRatio="1/1"
+          width={FIXED_IMAGE_SIZE}
+          height={FIXED_IMAGE_SIZE}
+          style={{filter: 'grayscale(100%)'}}
+        />
+      ) : null}
+      <span>{tailName(tier1Category.name.value)}</span>
+      <div
+        style={{
+          display: 'flex',
+          gap: 10,
+          flexDirection:
+            tier1Category.tier2ChildCategories == null ||
+            tier1Category.tier2ChildCategories.references.nodes.every(
+              (tier2Category) => {
+                return tier2Category.tier3ChildCategories == null;
+              },
+            )
+              ? 'row'
+              : 'column',
+        }}
+      >
+        {tier1Category.tier2ChildCategories == null
+          ? null
+          : tier1Category.tier2ChildCategories.references.nodes.map(
+              (tier2Category) => {
+                return <Tier2Category tier2Category={tier2Category} />;
+              },
+            )}
+      </div>
+    </div>
+  );
+}
+
+function AllCategories({categories}: {categories: Promise<any>}) {
   return (
     <div>
-      <h2>Products</h2>
+      <h2>All Categories</h2>
+      <div style={{borderTop: '1px solid grey'}} />
       <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => {
-            console.log('response', response);
+        <Await resolve={categories}>
+          {(hardwareCategoryResponse) => {
             return (
-              <div style={{display: 'flex', flexDirection: 'row'}}>
-                {response
-                  ? response.collections.edges.map((collection) => {
-                      console.log('collection', collection);
-                      return (
-                        <div key={collection.node.id}>
-                          <h3>{collection.node.title}</h3>
-                          <div
-                            style={{display: 'flex', flexDirection: 'column'}}
-                          >
-                            {collection.node.products.edges.map((product) => {
-                              return (
-                                <Link
-                                  key={product.node.id}
-                                  to={`/products/${product.handle}`}
-                                >
-                                  <Image
-                                    data={product.node.images.edges[0]?.node}
-                                    aspectRatio="1/1"
-                                    sizes="(min-width: 45em) 20vw, 50vw"
-                                  />
-                                  <h4>{product.node.title}</h4>
-                                  <small>
-                                    <Money
-                                      data={
-                                        product.node.priceRange.minVariantPrice
-                                      }
-                                    />
-                                  </small>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })
+              <div style={{display: 'flex', flexDirection: 'column'}}>
+                {hardwareCategoryResponse
+                  ? hardwareCategoryResponse.categories.tier1ChildCategories.references.nodes.map(
+                      (tier1Category) => {
+                        return <Tier1Category tier1Category={tier1Category} />;
+                      },
+                    )
                   : null}
               </div>
             );
@@ -141,6 +251,62 @@ const PRODUCTS_QUERY = `#graphql
           }
         }
       }
+    }
+  }
+` as const;
+
+const CATEGORIES_QUERY = `#graphql
+  fragment CoreCategoryFields on Metaobject {
+    id
+    name: field(key: "name") {
+      value
+    }
+    image: field(key: "image") {
+      reference {
+        ... on MediaImage {
+          image {
+            id
+            url
+          }
+        }
+      }
+    }
+  }
+
+  fragment Tier2CategoryFields on Metaobject {
+    ...CoreCategoryFields
+  }
+
+  fragment Tier1CategoryFields on Metaobject {
+    ...CoreCategoryFields
+    tier2ChildCategories: field(key: "children_categories") {
+      references(first: 100) {
+        nodes {
+          ... on Metaobject {
+            ...Tier2CategoryFields
+          }    
+        }
+      }
+    }
+  }
+
+  fragment HardwareCategoryFields on Metaobject {
+    tier1ChildCategories: field(key: "children_categories") {
+      references(first: 100) {
+        nodes {
+          ... on Metaobject {
+            ...Tier1CategoryFields
+          }    
+        }
+      }
+    }
+  }
+
+  query getCollections {
+    categories: metaobject(
+      handle: {handle: "Hardware", type: "category_metaobject"}
+    ) {
+      ...HardwareCategoryFields
     }
   }
 ` as const;
