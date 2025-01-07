@@ -2,7 +2,6 @@ import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
 import {Image, Money} from '@shopify/hydrogen';
-import type {ProductsQuery} from 'storefrontapi.generated';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
@@ -63,35 +62,39 @@ function Products({products}: {products: Promise<ProductsQuery | null>}) {
           {(response) => {
             console.log('response', response);
             return (
-              <div>
+              <div style={{display: 'flex', flexDirection: 'row'}}>
                 {response
                   ? response.collections.edges.map((collection) => {
                       console.log('collection', collection);
                       return (
                         <div key={collection.node.id}>
                           <h3>{collection.node.title}</h3>
-                          {collection.node.products.edges.map((product) => {
-                            return (
-                              <Link
-                                key={product.node.id}
-                                to={`/products/${product.handle}`}
-                              >
-                                <Image
-                                  data={product.node.images.edges[0]?.node}
-                                  aspectRatio="1/1"
-                                  sizes="(min-width: 45em) 20vw, 50vw"
-                                />
-                                <h4>{product.node.title}</h4>
-                                <small>
-                                  <Money
-                                    data={
-                                      product.node.priceRange.minVariantPrice
-                                    }
+                          <div
+                            style={{display: 'flex', flexDirection: 'column'}}
+                          >
+                            {collection.node.products.edges.map((product) => {
+                              return (
+                                <Link
+                                  key={product.node.id}
+                                  to={`/products/${product.handle}`}
+                                >
+                                  <Image
+                                    data={product.node.images.edges[0]?.node}
+                                    aspectRatio="1/1"
+                                    sizes="(min-width: 45em) 20vw, 50vw"
                                   />
-                                </small>
-                              </Link>
-                            );
-                          })}
+                                  <h4>{product.node.title}</h4>
+                                  <small>
+                                    <Money
+                                      data={
+                                        product.node.priceRange.minVariantPrice
+                                      }
+                                    />
+                                  </small>
+                                </Link>
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     })
