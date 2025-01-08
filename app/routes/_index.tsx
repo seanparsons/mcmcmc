@@ -88,36 +88,28 @@ function tailName(name: string): string {
   return nameParts[nameParts.length - 1].trim();
 }
 
-function Categories({categories}: {categories: Promise<any>}) {
+function Categories({categories}: {categories: any}) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Await resolve={categories}>
-        {(categoriesResponse) => {
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 200,
+        gap: 10,
+      }}
+    >
+      <h2>Choose a Category</h2>
+      <div style={{borderTop: '1px solid grey'}} />
+      {categories.categories.tier1ChildCategories.references.nodes.map(
+        (child) => {
           return (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                minWidth: 200,
-                gap: 10,
-              }}
-            >
-              <h2>Choose a Category</h2>
-              <div style={{borderTop: '1px solid grey'}} />
-              {categoriesResponse.categories.tier1ChildCategories.references.nodes.map(
-                (child) => {
-                  return (
-                    <Link key={child.id} to={`/categories/${child.name.value}`}>
-                      {tailName(child.name.value)}
-                    </Link>
-                  );
-                },
-              )}
-            </div>
+            <Link key={child.id} to={`/products/${child.name.value}`}>
+              {tailName(child.name.value)}
+            </Link>
           );
-        }}
-      </Await>
-    </Suspense>
+        },
+      )}
+    </div>
   );
 }
 
@@ -154,7 +146,7 @@ function Tier2Category({tier2Category}: any) {
             : undefined,
       }}
     >
-      <Link key={tier2Category.id} to={`/products/${tier2Category.handle}`}>
+      <Link key={tier2Category.id} to={`/products/${tier2Category.name.value}`}>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           {tier2Category.tier3ChildCategories == null ? (
             <Image
@@ -224,28 +216,20 @@ function Tier1Category({tier1Category}: any) {
   );
 }
 
-function AllCategories({categories}: {categories: Promise<any>}) {
+function AllCategories({categories}: {categories: any}) {
   return (
     <div>
       <h2>All Categories</h2>
       <div style={{borderTop: '1px solid grey'}} />
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={categories}>
-          {(hardwareCategoryResponse) => {
-            return (
-              <div style={{display: 'flex', flexDirection: 'column'}}>
-                {hardwareCategoryResponse
-                  ? hardwareCategoryResponse.categories.tier1ChildCategories.references.nodes.map(
-                      (tier1Category) => {
-                        return <Tier1Category tier1Category={tier1Category} />;
-                      },
-                    )
-                  : null}
-              </div>
-            );
-          }}
-        </Await>
-      </Suspense>
+      <div style={{display: 'flex', flexDirection: 'column'}}>
+        {categories
+          ? categories.categories.tier1ChildCategories.references.nodes.map(
+              (tier1Category) => {
+                return <Tier1Category tier1Category={tier1Category} />;
+              },
+            )
+          : null}
+      </div>
       <br />
     </div>
   );
