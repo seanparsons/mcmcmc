@@ -1,8 +1,9 @@
 import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
-import {Image, Money} from '@shopify/hydrogen';
-
+import {Image} from '@shopify/hydrogen';
+import {Aside} from '~/components/layout/Aside';
+import {CartAside, CartToggle} from '~/components/header/CartHeader';
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
 };
@@ -26,7 +27,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     context.storefront.query(CATEGORIES_QUERY),
   ]);
 
-  return {categories: categories};
+  return {categories};
 }
 
 /**
@@ -41,11 +42,34 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
-      <Categories categories={data.categories} />
-      <div style={{borderLeft: '1px solid grey'}} />
-      <AllCategories categories={data.categories} />
-    </div>
+    <Aside.Provider>
+      <CartAside cart={data.cart} />
+      <div style={{padding: 15, display: 'flex', flexDirection: 'column'}}>
+        <header
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 15,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <h1>McMcMc</h1>
+          <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
+            <div>Sign In</div>
+            <div>Search</div>
+            <CartToggle cart={data.cart} />
+          </div>
+        </header>
+        <main>
+          <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
+            <Categories categories={data.categories} />
+            <div style={{borderLeft: '1px solid grey'}} />
+            <AllCategories categories={data.categories} />
+          </div>
+        </main>
+      </div>
+    </Aside.Provider>
   );
 }
 

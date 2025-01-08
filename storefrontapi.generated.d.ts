@@ -328,21 +328,142 @@ export type GetCollectionsWithProductsQuery = {
   };
 };
 
-export type MinimalCollectionFragment = Pick<
-  StorefrontAPI.Collection,
-  'id' | 'title' | 'handle'
->;
+export type CoreCategoryFieldsFragment = Pick<
+  StorefrontAPI.Metaobject,
+  'id'
+> & {
+  name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  image?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<{
+      image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'id' | 'url'>>;
+    }>;
+  }>;
+};
+
+export type Tier2CategoryFieldsFragment = Pick<
+  StorefrontAPI.Metaobject,
+  'id'
+> & {
+  name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  image?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<{
+      image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'id' | 'url'>>;
+    }>;
+  }>;
+};
+
+export type Tier1CategoryFieldsFragment = Pick<
+  StorefrontAPI.Metaobject,
+  'id'
+> & {
+  tier2ChildCategories?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<
+        Pick<StorefrontAPI.Metaobject, 'id'> & {
+          name?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MetaobjectField, 'value'>
+          >;
+          image?: StorefrontAPI.Maybe<{
+            reference?: StorefrontAPI.Maybe<{
+              image?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Image, 'id' | 'url'>
+              >;
+            }>;
+          }>;
+        }
+      >;
+    }>;
+  }>;
+  name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  image?: StorefrontAPI.Maybe<{
+    reference?: StorefrontAPI.Maybe<{
+      image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'id' | 'url'>>;
+    }>;
+  }>;
+};
+
+export type HardwareCategoryFieldsFragment = {
+  tier1ChildCategories?: StorefrontAPI.Maybe<{
+    references?: StorefrontAPI.Maybe<{
+      nodes: Array<
+        Pick<StorefrontAPI.Metaobject, 'id'> & {
+          tier2ChildCategories?: StorefrontAPI.Maybe<{
+            references?: StorefrontAPI.Maybe<{
+              nodes: Array<
+                Pick<StorefrontAPI.Metaobject, 'id'> & {
+                  name?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                  >;
+                  image?: StorefrontAPI.Maybe<{
+                    reference?: StorefrontAPI.Maybe<{
+                      image?: StorefrontAPI.Maybe<
+                        Pick<StorefrontAPI.Image, 'id' | 'url'>
+                      >;
+                    }>;
+                  }>;
+                }
+              >;
+            }>;
+          }>;
+          name?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MetaobjectField, 'value'>
+          >;
+          image?: StorefrontAPI.Maybe<{
+            reference?: StorefrontAPI.Maybe<{
+              image?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.Image, 'id' | 'url'>
+              >;
+            }>;
+          }>;
+        }
+      >;
+    }>;
+  }>;
+};
 
 export type GetCollectionsQueryVariables = StorefrontAPI.Exact<{
   [key: string]: never;
 }>;
 
 export type GetCollectionsQuery = {
-  collections: {
-    edges: Array<{
-      node: Pick<StorefrontAPI.Collection, 'id' | 'title' | 'handle'>;
+  categories?: StorefrontAPI.Maybe<{
+    tier1ChildCategories?: StorefrontAPI.Maybe<{
+      references?: StorefrontAPI.Maybe<{
+        nodes: Array<
+          Pick<StorefrontAPI.Metaobject, 'id'> & {
+            tier2ChildCategories?: StorefrontAPI.Maybe<{
+              references?: StorefrontAPI.Maybe<{
+                nodes: Array<
+                  Pick<StorefrontAPI.Metaobject, 'id'> & {
+                    name?: StorefrontAPI.Maybe<
+                      Pick<StorefrontAPI.MetaobjectField, 'value'>
+                    >;
+                    image?: StorefrontAPI.Maybe<{
+                      reference?: StorefrontAPI.Maybe<{
+                        image?: StorefrontAPI.Maybe<
+                          Pick<StorefrontAPI.Image, 'id' | 'url'>
+                        >;
+                      }>;
+                    }>;
+                  }
+                >;
+              }>;
+            }>;
+            name?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            image?: StorefrontAPI.Maybe<{
+              reference?: StorefrontAPI.Maybe<{
+                image?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.Image, 'id' | 'url'>
+                >;
+              }>;
+            }>;
+          }
+        >;
+      }>;
     }>;
-  };
+  }>;
 };
 
 interface GeneratedQueryTypes {
@@ -362,7 +483,7 @@ interface GeneratedQueryTypes {
     return: GetCollectionsWithProductsQuery;
     variables: GetCollectionsWithProductsQueryVariables;
   };
-  '#graphql\n  fragment MinimalCollection on Collection {\n    id\n    title\n    handle\n  }\n  query getCollections {\n    collections {\n      edges {\n        node {\n          ...MinimalCollection\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  fragment CoreCategoryFields on Metaobject {\n    id\n    name: field(key: "name") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            id\n            url\n          }\n        }\n      }\n    }\n  }\n\n  fragment Tier2CategoryFields on Metaobject {\n    ...CoreCategoryFields\n  }\n\n  fragment Tier1CategoryFields on Metaobject {\n    ...CoreCategoryFields\n    tier2ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier2CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  fragment HardwareCategoryFields on Metaobject {\n    tier1ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier1CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  query getCollections {\n    categories: metaobject(\n      handle: {handle: "Hardware", type: "category_metaobject"}\n    ) {\n      ...HardwareCategoryFields\n    }\n  }\n': {
     return: GetCollectionsQuery;
     variables: GetCollectionsQueryVariables;
   };
