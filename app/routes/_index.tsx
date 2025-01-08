@@ -1,7 +1,7 @@
 import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
-import {Image} from '@shopify/hydrogen';
+import {CartReturn, Image} from '@shopify/hydrogen';
 import {Aside} from '~/components/layout/Aside';
 import {CartAside, CartToggle} from '~/components/header/CartHeader';
 export const meta: MetaFunction = () => {
@@ -35,8 +35,16 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
-  return {};
+function loadDeferredData({context}: LoaderFunctionArgs): {
+  cart: Promise<CartReturn | null>;
+  isLoggedIn: Promise<boolean>;
+} {
+  const {customerAccount, cart} = context;
+
+  return {
+    cart: cart.get(),
+    isLoggedIn: customerAccount.isLoggedIn(),
+  };
 }
 
 export default function Homepage() {
