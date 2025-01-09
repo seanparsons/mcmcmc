@@ -300,6 +300,9 @@ export type CoreCategoryFieldsFragment = Pick<
   'id' | 'handle'
 > & {
   name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  description?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
   image?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<{
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'id' | 'url'>>;
@@ -312,6 +315,9 @@ export type Tier2CategoryFieldsFragment = Pick<
   'id' | 'handle'
 > & {
   name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  description?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
   image?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<{
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'id' | 'url'>>;
@@ -330,6 +336,9 @@ export type Tier1CategoryFieldsFragment = Pick<
           name?: StorefrontAPI.Maybe<
             Pick<StorefrontAPI.MetaobjectField, 'value'>
           >;
+          description?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MetaobjectField, 'value'>
+          >;
           image?: StorefrontAPI.Maybe<{
             reference?: StorefrontAPI.Maybe<{
               image?: StorefrontAPI.Maybe<
@@ -342,6 +351,9 @@ export type Tier1CategoryFieldsFragment = Pick<
     }>;
   }>;
   name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
+  description?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
   image?: StorefrontAPI.Maybe<{
     reference?: StorefrontAPI.Maybe<{
       image?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Image, 'id' | 'url'>>;
@@ -361,6 +373,9 @@ export type HardwareCategoryFieldsFragment = {
                   name?: StorefrontAPI.Maybe<
                     Pick<StorefrontAPI.MetaobjectField, 'value'>
                   >;
+                  description?: StorefrontAPI.Maybe<
+                    Pick<StorefrontAPI.MetaobjectField, 'value'>
+                  >;
                   image?: StorefrontAPI.Maybe<{
                     reference?: StorefrontAPI.Maybe<{
                       image?: StorefrontAPI.Maybe<
@@ -373,6 +388,9 @@ export type HardwareCategoryFieldsFragment = {
             }>;
           }>;
           name?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MetaobjectField, 'value'>
+          >;
+          description?: StorefrontAPI.Maybe<
             Pick<StorefrontAPI.MetaobjectField, 'value'>
           >;
           image?: StorefrontAPI.Maybe<{
@@ -389,7 +407,7 @@ export type HardwareCategoryFieldsFragment = {
 };
 
 export type GetCollectionsQueryVariables = StorefrontAPI.Exact<{
-  [key: string]: never;
+  handle: StorefrontAPI.Scalars['String']['input'];
 }>;
 
 export type GetCollectionsQuery = {
@@ -405,6 +423,9 @@ export type GetCollectionsQuery = {
                     name?: StorefrontAPI.Maybe<
                       Pick<StorefrontAPI.MetaobjectField, 'value'>
                     >;
+                    description?: StorefrontAPI.Maybe<
+                      Pick<StorefrontAPI.MetaobjectField, 'value'>
+                    >;
                     image?: StorefrontAPI.Maybe<{
                       reference?: StorefrontAPI.Maybe<{
                         image?: StorefrontAPI.Maybe<
@@ -417,6 +438,9 @@ export type GetCollectionsQuery = {
               }>;
             }>;
             name?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MetaobjectField, 'value'>
+            >;
+            description?: StorefrontAPI.Maybe<
               Pick<StorefrontAPI.MetaobjectField, 'value'>
             >;
             image?: StorefrontAPI.Maybe<{
@@ -505,7 +529,7 @@ interface GeneratedQueryTypes {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
   };
-  '#graphql\n  fragment CoreCategoryFields on Metaobject {\n    id\n    handle\n    name: field(key: "name") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            id\n            url\n          }\n        }\n      }\n    }\n  }\n\n  fragment Tier2CategoryFields on Metaobject {\n    ...CoreCategoryFields\n  }\n\n  fragment Tier1CategoryFields on Metaobject {\n    ...CoreCategoryFields\n    tier2ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier2CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  fragment HardwareCategoryFields on Metaobject {\n    tier1ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier1CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  query getCollections {\n    categories: metaobject(\n      handle: {handle: "Hardware", type: "category_metaobject"}\n    ) {\n      ...HardwareCategoryFields\n    }\n  }\n': {
+  '#graphql\n  fragment CoreCategoryFields on Metaobject {\n    id\n    handle\n    name: field(key: "name") {\n      value\n    }\n    description: field(key: "description") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            id\n            url\n          }\n        }\n      }\n    }\n  }\n\n  fragment Tier2CategoryFields on Metaobject {\n    ...CoreCategoryFields\n  }\n\n  fragment Tier1CategoryFields on Metaobject {\n    ...CoreCategoryFields\n    tier2ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier2CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  fragment HardwareCategoryFields on Metaobject {\n    tier1ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier1CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  query getCollections($handle: String!) {\n    categories: metaobject(\n      handle: {handle: $handle, type: "category_metaobject"}\n    ) {\n      ...HardwareCategoryFields\n    }\n  }\n': {
     return: GetCollectionsQuery;
     variables: GetCollectionsQueryVariables;
   };

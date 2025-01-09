@@ -5,6 +5,7 @@ import {Link, useLoaderData} from '@remix-run/react';
 import {Aside} from '~/components/layout/Aside';
 import {CartAside, CartToggle} from '~/components/header/CartHeader';
 import {CartReturn, Image} from '@shopify/hydrogen';
+import {AllCategories, CATEGORIES_QUERY} from './_index';
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
@@ -22,12 +23,15 @@ export async function loader(args: LoaderFunctionArgs) {
  */
 async function loadCriticalData({context, params}: LoaderFunctionArgs) {
   const {category} = params;
-  const [productsFromCategory] = await Promise.all([
+  const [productsFromCategory, subCategories] = await Promise.all([
     context.storefront.query(PRODUCTS_FROM_CATEGORY, {
       variables: {query: `handle:${category}`},
     }),
+    context.storefront.query(CATEGORIES_QUERY, {
+      variables: {handle: category ?? 'hardware'},
+    }),
   ]);
-  return {productsFromCategory};
+  return {productsFromCategory, subCategories};
 }
 
 /**
@@ -56,10 +60,12 @@ const ProductsPage = () => {
         style={{
           backgroundColor: 'lightgrey',
           padding: 15,
-          width: '200px',
+          minWidth: '200px',
         }}
       />
       <div>
+        <AllCategories categories={data.subCategories} title={null} />
+
         {data.productsFromCategory.collections.nodes.map((collection) => {
           return (
             <>

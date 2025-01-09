@@ -21,7 +21,9 @@ export async function loader(args: LoaderFunctionArgs) {
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
   const [categories] = await Promise.all([
-    context.storefront.query(CATEGORIES_QUERY),
+    context.storefront.query(CATEGORIES_QUERY, {
+      variables: {handle: 'hardware'},
+    }),
   ]);
 
   return {categories};
@@ -42,7 +44,7 @@ export default function Homepage() {
     <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
       <Categories categories={data.categories} />
       <div style={{borderLeft: '1px solid grey'}} />
-      <AllCategories categories={data.categories} />
+      <AllCategories categories={data.categories} title={'All Categories'} />
     </div>
   );
 }
@@ -54,7 +56,16 @@ function tailName(name: string): string {
   return nameParts[nameParts.length - 1].trim();
 }
 
-function Categories({categories}: {categories: any}) {
+function getDescription(description: any): string | null {
+  if (description == null) {
+    return null;
+  } else {
+    const descriptionObject = JSON.parse(description.value);
+    return descriptionObject?.children?.[0]?.children?.[0].value ?? null;
+  }
+}
+
+export function Categories({categories}: {categories: any}) {
   return (
     <div
       style={{
@@ -140,21 +151,46 @@ function Tier2Category({tier2Category}: any) {
 }
 
 function Tier1Category({tier1Category}: any) {
+  const description = getDescription(tier1Category.description);
   return (
     <div
       key={tier1Category.id}
       style={{display: 'flex', flexDirection: 'column', gap: 10}}
     >
       {tier1Category.tier2ChildCategories == null ? (
-        <Image
-          data={{url: tier1Category.image.reference.image.url}}
-          aspectRatio="1/1"
-          width={FIXED_IMAGE_SIZE}
-          height={FIXED_IMAGE_SIZE}
-          style={{filter: 'grayscale(100%)'}}
-        />
-      ) : null}
-      <span>{tailName(tier1Category.name.value)}</span>
+        <Link to={`/products/${tier1Category.handle}`}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <span>{tailName(tier1Category.name.value)}</span>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: '400px',
+                minHeight: '100px',
+                padding: 2,
+              }}
+            >
+              <Image
+                data={{url: tier1Category.image.reference.image.url}}
+                aspectRatio="1/1"
+                width={FIXED_IMAGE_SIZE}
+                height={FIXED_IMAGE_SIZE}
+                style={{filter: 'grayscale(100%)'}}
+              />
+              {description == null ? null : (
+                <span style={{fontSize: 12, padding: 2}}>{description}</span>
+              )}
+            </div>
+          </div>
+        </Link>
+      ) : (
+        <span>{tailName(tier1Category.name.value)}</span>
+      )}
       <div
         style={{
           display: 'flex',
@@ -183,31 +219,58 @@ function Tier1Category({tier1Category}: any) {
   );
 }
 
-function AllCategories({categories}: {categories: any}) {
-  console.log('categories', categories);
+export function AllCategories({
+  categories,
+  title,
+}: {
+  categories: any;
+  title: string | null;
+}) {
   return (
     <div>
-      <h2>All Categories</h2>
-      <div style={{borderTop: '1px solid grey'}} />
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        {categories
-          ? categories.categories.tier1ChildCategories.references.nodes.map(
+      {title == null ? null : (
+        <>
+          <h2>{title}</h2>
+          <div style={{borderTop: '1px solid grey'}} />
+        </>
+      )}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection:
+            categories.categories.tier1ChildCategories == null ||
+            categories.categories.tier1ChildCategories.references.nodes.every(
+              (tier1Category) => {
+                return tier1Category.tier3ChildCategories == null;
+              },
+            )
+              ? 'row'
+              : 'column',
+          flexWrap: 'wrap',
+        }}
+      >
+        {categories == null ||
+        categories.categories.tier1ChildCategories == null
+          ? null
+          : categories.categories.tier1ChildCategories.references.nodes.map(
               (tier1Category) => {
                 return <Tier1Category tier1Category={tier1Category} />;
               },
-            )
-          : null}
+            )}
       </div>
       <br />
     </div>
   );
 }
 
-const CATEGORIES_QUERY = `#graphql
+export const CATEGORIES_QUERY = `#graphql
   fragment CoreCategoryFields on Metaobject {
     id
     handle
     name: field(key: "name") {
+      value
+    }
+    description: field(key: "description") {
       value
     }
     image: field(key: "image") {
@@ -251,9 +314,9 @@ const CATEGORIES_QUERY = `#graphql
     }
   }
 
-  query getCollections {
+  query getCollections($handle: String!) {
     categories: metaobject(
-      handle: {handle: "Hardware", type: "category_metaobject"}
+      handle: {handle: $handle, type: "category_metaobject"}
     ) {
       ...HardwareCategoryFields
     }
