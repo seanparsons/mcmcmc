@@ -1,10 +1,9 @@
-import {useParams} from 'react-router-dom';
-import {useEffect, useState} from 'react';
-import {defer, LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import type {LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {defer} from '@shopify/remix-oxygen';
 import {useLoaderData} from '@remix-run/react';
-import {Aside} from '~/components/layout/Aside';
-import {CartAside, CartToggle} from '~/components/header/CartHeader';
-import {CartReturn, Image} from '@shopify/hydrogen';
+import {Image} from '@shopify/hydrogen';
+import {AddToCartButton} from '~/components/cart/AddToCartButton';
+import {useAside} from '~/components/layout/Aside';
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
@@ -23,6 +22,9 @@ export async function loader(args: LoaderFunctionArgs) {
 
 async function loadCriticalData({context, params}: LoaderFunctionArgs) {
   const {productHandle} = params;
+  if (!productHandle) {
+    return {product: null};
+  }
   const [product] = await Promise.all([
     context.storefront.query(PRODUCT_FROM_HANDLE, {
       variables: {handle: productHandle},
@@ -36,7 +38,7 @@ async function loadCriticalData({context, params}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs): {} {
+function loadDeferredData({context}: LoaderFunctionArgs): object {
   return {};
 }
 
@@ -44,6 +46,7 @@ const FIXED_IMAGE_SIZE = 75;
 
 const ProductPage = () => {
   const data = useLoaderData<typeof loader>();
+  const {open} = useAside();
   return (
     <div
       style={{
@@ -61,12 +64,13 @@ const ProductPage = () => {
         }}
       />
       <div>
-        <h2>{data.product?.product.title}</h2>
-        <p>{data.product?.product.description}</p>
+        <h2>{data.product?.product?.title}</h2>
+        <p>{data.product?.product?.description}</p>
         <div>
-          {data.product?.product.images.nodes.map((image) => {
+          {data.product?.product?.images?.nodes?.map((image) => {
             return (
               <Image
+                key={image.url}
                 data={{url: image.url}}
                 width={FIXED_IMAGE_SIZE}
                 height={FIXED_IMAGE_SIZE}
@@ -82,7 +86,7 @@ const ProductPage = () => {
             <td>Price</td>
           </thead>
           <tbody>
-            {data.product?.product.variants.nodes.map((variant: any) => {
+            {data.product?.product?.variants?.nodes?.map((variant: any) => {
               return (
                 <tr key={variant.id}>
                   <td>{variant.title}</td>
@@ -92,6 +96,27 @@ const ProductPage = () => {
                       currency: 'USD',
                       minimumFractionDigits: 2,
                     })}
+                  </td>
+                  <td>
+                    <AddToCartButton
+                      disabled={!variant || !variant.availableForSale}
+                      onClick={() => {
+                        open('cart');
+                      }}
+                      lines={
+                        variant
+                          ? [
+                              {
+                                merchandiseId: variant.id,
+                                quantity: 1,
+                                selectedVariant: variant,
+                              },
+                            ]
+                          : []
+                      }
+                    >
+                      {variant?.availableForSale ? 'Add to cart' : 'Sold out'}
+                    </AddToCartButton>
                   </td>
                 </tr>
               );
@@ -105,25 +130,54 @@ const ProductPage = () => {
 
 export default ProductPage;
 
+// copied all fields since it's not clear what's exactly needed
 const PRODUCT_FROM_HANDLE = `#graphql
-query getProduct($handle: String!) {
-  product(handle: $handle) {
-    id
-    title
-    description
-    images(first: 1){
-      nodes {
-        url
-      }
-    }
-    variants(first: 10){
-      nodes{
- 				id 
-        price {
-          amount
+  query getProduct($handle: String!) {
+    product(handle: $handle) {
+      id
+      title
+      description
+      images(first: 1) {
+        nodes {
+          url
         }
-        title
+      }
+      variants(first: 10) {
+        nodes {
+          availableForSale
+          compareAtPrice {
+            amount
+            currencyCode
+          }
+          id
+          image {
+            __typename
+            id
+            url
+            altText
+            width
+            height
+          }
+          price {
+            amount
+            currencyCode
+          }
+          product {
+            title
+            handle
+          }
+          selectedOptions {
+            name
+            value
+          }
+          sku
+          title
+          unitPrice {
+            amount
+            currencyCode
+          }
+        }
       }
     }
   }
-}`;
+`;

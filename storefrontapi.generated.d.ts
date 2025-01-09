@@ -295,39 +295,6 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
 
-export type GetCollectionsWithProductsQueryVariables = StorefrontAPI.Exact<{
-  [key: string]: never;
-}>;
-
-export type GetCollectionsWithProductsQuery = {
-  collections: {
-    edges: Array<{
-      node: Pick<StorefrontAPI.Collection, 'id' | 'title'> & {
-        products: {
-          edges: Array<{
-            node: Pick<
-              StorefrontAPI.Product,
-              'id' | 'title' | 'description'
-            > & {
-              priceRange: {
-                minVariantPrice: Pick<
-                  StorefrontAPI.MoneyV2,
-                  'amount' | 'currencyCode'
-                >;
-              };
-              images: {
-                edges: Array<{
-                  node: Pick<StorefrontAPI.Image, 'src' | 'altText'>;
-                }>;
-              };
-            };
-          }>;
-        };
-      };
-    }>;
-  };
-};
-
 export type CoreCategoryFieldsFragment = Pick<
   StorefrontAPI.Metaobject,
   'id' | 'handle'
@@ -476,8 +443,27 @@ export type GetProductQuery = {
       images: {nodes: Array<Pick<StorefrontAPI.Image, 'url'>>};
       variants: {
         nodes: Array<
-          Pick<StorefrontAPI.ProductVariant, 'id' | 'title'> & {
-            price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
+          Pick<
+            StorefrontAPI.ProductVariant,
+            'availableForSale' | 'id' | 'sku' | 'title'
+          > & {
+            compareAtPrice?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+            >;
+            image?: StorefrontAPI.Maybe<
+              {__typename: 'Image'} & Pick<
+                StorefrontAPI.Image,
+                'id' | 'url' | 'altText' | 'width' | 'height'
+              >
+            >;
+            price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+            product: Pick<StorefrontAPI.Product, 'title' | 'handle'>;
+            selectedOptions: Array<
+              Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+            >;
+            unitPrice?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+            >;
           }
         >;
       };
@@ -519,15 +505,11 @@ interface GeneratedQueryTypes {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
   };
-  '#graphql\n  query getCollectionsWithProducts {\n    collections(first: 10) {\n      edges {\n        node {\n          id\n          title\n          products(first: 10) {\n            edges {\n              node {\n                id\n                title\n                description\n                priceRange {\n                  minVariantPrice {\n                    amount\n                    currencyCode\n                  }\n                }\n                images(first: 1) {\n                  edges {\n                    node {\n                      src\n                      altText\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
-    return: GetCollectionsWithProductsQuery;
-    variables: GetCollectionsWithProductsQueryVariables;
-  };
   '#graphql\n  fragment CoreCategoryFields on Metaobject {\n    id\n    handle\n    name: field(key: "name") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            id\n            url\n          }\n        }\n      }\n    }\n  }\n\n  fragment Tier2CategoryFields on Metaobject {\n    ...CoreCategoryFields\n  }\n\n  fragment Tier1CategoryFields on Metaobject {\n    ...CoreCategoryFields\n    tier2ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier2CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  fragment HardwareCategoryFields on Metaobject {\n    tier1ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier1CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  query getCollections {\n    categories: metaobject(\n      handle: {handle: "Hardware", type: "category_metaobject"}\n    ) {\n      ...HardwareCategoryFields\n    }\n  }\n': {
     return: GetCollectionsQuery;
     variables: GetCollectionsQueryVariables;
   };
-  '#graphql\nquery getProduct($handle: String!) {\n  product(handle: $handle) {\n    id\n    title\n    description\n    images(first: 1){\n      nodes {\n        url\n      }\n    }\n    variants(first: 10){\n      nodes{\n \t\t\t\tid \n        price {\n          amount\n        }\n        title\n      }\n    }\n  }\n}': {
+  '#graphql\n  query getProduct($handle: String!) {\n    product(handle: $handle) {\n      id\n      title\n      description\n      images(first: 1) {\n        nodes {\n          url\n        }\n      }\n      variants(first: 10) {\n        nodes {\n          availableForSale\n          compareAtPrice {\n            amount\n            currencyCode\n          }\n          id\n          image {\n            __typename\n            id\n            url\n            altText\n            width\n            height\n          }\n          price {\n            amount\n            currencyCode\n          }\n          product {\n            title\n            handle\n          }\n          selectedOptions {\n            name\n            value\n          }\n          sku\n          title\n          unitPrice {\n            amount\n            currencyCode\n          }\n        }\n      }\n    }\n  }\n': {
     return: GetProductQuery;
     variables: GetProductQueryVariables;
   };

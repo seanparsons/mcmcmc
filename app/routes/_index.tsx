@@ -1,9 +1,6 @@
 import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Await, useLoaderData, Link, type MetaFunction} from '@remix-run/react';
-import {Suspense} from 'react';
-import {CartReturn, Image} from '@shopify/hydrogen';
-import {Aside} from '~/components/layout/Aside';
-import {CartAside, CartToggle} from '~/components/header/CartHeader';
+import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
+import {Image} from '@shopify/hydrogen';
 export const meta: MetaFunction = () => {
   return [{title: 'Hydrogen | Home'}];
 };
