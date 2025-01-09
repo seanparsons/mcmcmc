@@ -1,7 +1,7 @@
 import {useParams} from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import {defer, LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Link, useLoaderData} from '@remix-run/react';
+import {useLoaderData} from '@remix-run/react';
 import {Aside} from '~/components/layout/Aside';
 import {CartAside, CartToggle} from '~/components/header/CartHeader';
 import {CartReturn, Image} from '@shopify/hydrogen';
@@ -20,14 +20,15 @@ export async function loader(args: LoaderFunctionArgs) {
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
+
 async function loadCriticalData({context, params}: LoaderFunctionArgs) {
-  const {category} = params;
-  const [productsFromCategory] = await Promise.all([
-    context.storefront.query(PRODUCTS_FROM_CATEGORY, {
-      variables: {query: `title:${category}`},
+  const {productHandle} = params;
+  const [product] = await Promise.all([
+    context.storefront.query(PRODUCT_FROM_HANDLE, {
+      variables: {handle: productHandle},
     }),
   ]);
-  return {productsFromCategory};
+  return {product};
 }
 
 /**
@@ -49,7 +50,7 @@ function loadDeferredData({context}: LoaderFunctionArgs): {
 
 const FIXED_IMAGE_SIZE = 75;
 
-const ProductsPage = () => {
+const ProductPage = () => {
   const data = useLoaderData<typeof loader>();
   return (
     <Aside.Provider>
@@ -88,56 +89,46 @@ const ProductsPage = () => {
               }}
             />
             <div>
-              {data.productsFromCategory.collections.nodes.map((collection) => {
-                return (
-                  <>
-                    <h2>{collection.title}</h2>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr 1fr',
-                        gap: 15,
-                      }}
-                    >
-                      {collection.products.nodes.map((product) => {
-                        return (
-                          <Link
-                            key={product.id}
-                            to={`/product/${product.handle}`}
-                          >
-                            <div
-                              style={{
-                                width: '400px',
-                                minHeight: '100px',
-                                border: '1px solid grey',
-                                padding: 3,
-                              }}
-                            >
-                              <span>{product.title}</span>
-                              <div
-                                style={{
-                                  display: 'grid',
-                                  gridTemplateColumns: '75px 1fr',
-                                  gap: 10,
-                                }}
-                              >
-                                <span style={{fontSize: 15}}>Image</span>
-                                <span
-                                  style={{
-                                    fontSize: 12,
-                                  }}
-                                >
-                                  {product.description.split('.')[0]}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </>
-                );
-              })}
+              <h2>{data.product?.product.title}</h2>
+              <p>{data.product?.product.description}</p>
+              <div>
+                {data.product?.product.images.nodes.map((image) => {
+                  return (
+                    <Image
+                      data={{url: image.url}}
+                      width={FIXED_IMAGE_SIZE}
+                      height={FIXED_IMAGE_SIZE}
+                      style={{filter: 'grayscale(100%)'}}
+                    />
+                  );
+                })}
+              </div>
+              <h4>Variants</h4>
+              <table style={{display: 'table-header-group'}}>
+                <thead>
+                  <td>Variant</td>
+                  <td>Price</td>
+                </thead>
+                <tbody>
+                  {data.product?.product.variants.nodes.map((variant: any) => {
+                    return (
+                      <tr key={variant.id}>
+                        <td>{variant.title}</td>
+                        <td>
+                          {parseFloat(variant.price.amount).toLocaleString(
+                            'en-US',
+                            {
+                              style: 'currency',
+                              currency: 'USD',
+                              minimumFractionDigits: 2,
+                            },
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </main>
@@ -146,20 +137,26 @@ const ProductsPage = () => {
   );
 };
 
-export default ProductsPage;
+export default ProductPage;
 
-const PRODUCTS_FROM_CATEGORY = `#graphql
-  query getProducts($query: String!) {
-  collections(first: 10, query: $query) {
-    nodes {
-      title
-      products(first: 10) {
-        nodes {
-          id
-          title
-          description
-          handle
+const PRODUCT_FROM_HANDLE = `#graphql
+query getProduct($handle: String!) {
+  product(handle: $handle) {
+    id
+    title
+    description
+    images(first: 1){
+      nodes {
+        url
+      }
+    }
+    variants(first: 10){
+      nodes{
+ 				id 
+        price {
+          amount
         }
+        title
       }
     }
   }

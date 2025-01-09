@@ -466,15 +466,36 @@ export type GetCollectionsQuery = {
   }>;
 };
 
+export type GetProductQueryVariables = StorefrontAPI.Exact<{
+  handle: StorefrontAPI.Scalars['String']['input'];
+}>;
+
+export type GetProductQuery = {
+  product?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.Product, 'id' | 'description'> & {
+      images: {nodes: Array<Pick<StorefrontAPI.Image, 'url'>>};
+    }
+  >;
+};
+
 export type GetProductsQueryVariables = StorefrontAPI.Exact<{
   query: StorefrontAPI.Scalars['String']['input'];
 }>;
 
 export type GetProductsQuery = {
   collections: {
-    nodes: Array<{
-      products: {nodes: Array<Pick<StorefrontAPI.Product, 'id' | 'title'>>};
-    }>;
+    nodes: Array<
+      Pick<StorefrontAPI.Collection, 'title'> & {
+        products: {
+          nodes: Array<
+            Pick<
+              StorefrontAPI.Product,
+              'id' | 'title' | 'description' | 'handle'
+            >
+          >;
+        };
+      }
+    >;
   };
 };
 
@@ -499,7 +520,11 @@ interface GeneratedQueryTypes {
     return: GetCollectionsQuery;
     variables: GetCollectionsQueryVariables;
   };
-  '#graphql\n  query getProducts($query: String!) {\n  collections(first: 1, query: $query) {\n    nodes {\n      products(first: 10) {\n        nodes {\n          id\n          title\n        }\n      }\n    }\n  }\n}': {
+  '#graphql\nquery getProduct($handle: String!) {\n  product(handle: $handle) {\n    id\n    description\n    images(first: 1){\n      nodes {\n        url\n      }\n    }\n  }\n}': {
+    return: GetProductQuery;
+    variables: GetProductQueryVariables;
+  };
+  '#graphql\n  query getProducts($query: String!) {\n  collections(first: 10, query: $query) {\n    nodes {\n      title\n      products(first: 10) {\n        nodes {\n          id\n          title\n          description\n          handle\n        }\n      }\n    }\n  }\n}': {
     return: GetProductsQuery;
     variables: GetProductsQueryVariables;
   };
