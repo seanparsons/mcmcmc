@@ -472,8 +472,15 @@ export type GetProductQueryVariables = StorefrontAPI.Exact<{
 
 export type GetProductQuery = {
   product?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Product, 'id' | 'description'> & {
+    Pick<StorefrontAPI.Product, 'id' | 'title' | 'description'> & {
       images: {nodes: Array<Pick<StorefrontAPI.Image, 'url'>>};
+      variants: {
+        nodes: Array<
+          Pick<StorefrontAPI.ProductVariant, 'id' | 'title'> & {
+            price: Pick<StorefrontAPI.MoneyV2, 'amount'>;
+          }
+        >;
+      };
     }
   >;
 };
@@ -520,7 +527,7 @@ interface GeneratedQueryTypes {
     return: GetCollectionsQuery;
     variables: GetCollectionsQueryVariables;
   };
-  '#graphql\nquery getProduct($handle: String!) {\n  product(handle: $handle) {\n    id\n    description\n    images(first: 1){\n      nodes {\n        url\n      }\n    }\n  }\n}': {
+  '#graphql\nquery getProduct($handle: String!) {\n  product(handle: $handle) {\n    id\n    title\n    description\n    images(first: 1){\n      nodes {\n        url\n      }\n    }\n    variants(first: 10){\n      nodes{\n \t\t\t\tid \n        price {\n          amount\n        }\n        title\n      }\n    }\n  }\n}': {
     return: GetProductQuery;
     variables: GetProductQueryVariables;
   };

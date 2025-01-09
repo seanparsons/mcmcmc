@@ -24,7 +24,7 @@ async function loadCriticalData({context, params}: LoaderFunctionArgs) {
   const {category} = params;
   const [productsFromCategory] = await Promise.all([
     context.storefront.query(PRODUCTS_FROM_CATEGORY, {
-      variables: {query: `title:${category}`},
+      variables: {query: `handle:${category}`},
     }),
   ]);
   return {productsFromCategory};

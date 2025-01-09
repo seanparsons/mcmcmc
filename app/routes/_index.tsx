@@ -103,7 +103,7 @@ function Categories({categories}: {categories: any}) {
       {categories.categories.tier1ChildCategories.references.nodes.map(
         (child) => {
           return (
-            <Link key={child.id} to={`/products/${child.name.value}`}>
+            <Link key={child.id} to={`/products/${child.handle}`}>
               {tailName(child.name.value)}
             </Link>
           );
@@ -146,7 +146,7 @@ function Tier2Category({tier2Category}: any) {
             : undefined,
       }}
     >
-      <Link key={tier2Category.id} to={`/products/${tier2Category.name.value}`}>
+      <Link key={tier2Category.id} to={`/products/${tier2Category.handle}`}>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           {tier2Category.tier3ChildCategories == null ? (
             <Image
@@ -217,6 +217,7 @@ function Tier1Category({tier1Category}: any) {
 }
 
 function AllCategories({categories}: {categories: any}) {
+  console.log('categories', categories);
   return (
     <div>
       <h2>All Categories</h2>
@@ -274,6 +275,7 @@ const PRODUCTS_QUERY = `#graphql
 const CATEGORIES_QUERY = `#graphql
   fragment CoreCategoryFields on Metaobject {
     id
+    handle
     name: field(key: "name") {
       value
     }
