@@ -171,6 +171,7 @@ function Tier1Category({tier1Category}: any) {
             )
               ? 'row'
               : 'column',
+          flexWrap: 'wrap',
         }}
       >
         {tier1Category.tier2ChildCategories == null
@@ -204,42 +205,6 @@ function AllCategories({categories}: {categories: any}) {
     </div>
   );
 }
-
-const PRODUCTS_QUERY = `#graphql
-  query getCollectionsWithProducts {
-    collections(first: 10) {
-      edges {
-        node {
-          id
-          title
-          products(first: 10) {
-            edges {
-              node {
-                id
-                title
-                description
-                priceRange {
-                  minVariantPrice {
-                    amount
-                    currencyCode
-                  }
-                }
-                images(first: 1) {
-                  edges {
-                    node {
-                      src
-                      altText
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-` as const;
 
 const CATEGORIES_QUERY = `#graphql
   fragment CoreCategoryFields on Metaobject {

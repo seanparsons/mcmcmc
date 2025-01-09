@@ -119,7 +119,7 @@ const PRODUCTS_FROM_CATEGORY = `#graphql
   collections(first: 10, query: $query) {
     nodes {
       title
-      products(first: 10) {
+      products(first: 30) {
         nodes {
           id
           title

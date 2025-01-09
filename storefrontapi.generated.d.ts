@@ -531,7 +531,7 @@ interface GeneratedQueryTypes {
     return: GetProductQuery;
     variables: GetProductQueryVariables;
   };
-  '#graphql\n  query getProducts($query: String!) {\n  collections(first: 10, query: $query) {\n    nodes {\n      title\n      products(first: 10) {\n        nodes {\n          id\n          title\n          description\n          handle\n        }\n      }\n    }\n  }\n}': {
+  '#graphql\n  query getProducts($query: String!) {\n  collections(first: 10, query: $query) {\n    nodes {\n      title\n      products(first: 30) {\n        nodes {\n          id\n          title\n          description\n          handle\n        }\n      }\n    }\n  }\n}': {
     return: GetProductsQuery;
     variables: GetProductsQueryVariables;
   };
