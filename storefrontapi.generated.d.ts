@@ -330,7 +330,7 @@ export type GetCollectionsWithProductsQuery = {
 
 export type CoreCategoryFieldsFragment = Pick<
   StorefrontAPI.Metaobject,
-  'id'
+  'id' | 'handle'
 > & {
   name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
   image?: StorefrontAPI.Maybe<{
@@ -342,7 +342,7 @@ export type CoreCategoryFieldsFragment = Pick<
 
 export type Tier2CategoryFieldsFragment = Pick<
   StorefrontAPI.Metaobject,
-  'id'
+  'id' | 'handle'
 > & {
   name?: StorefrontAPI.Maybe<Pick<StorefrontAPI.MetaobjectField, 'value'>>;
   image?: StorefrontAPI.Maybe<{
@@ -354,12 +354,12 @@ export type Tier2CategoryFieldsFragment = Pick<
 
 export type Tier1CategoryFieldsFragment = Pick<
   StorefrontAPI.Metaobject,
-  'id'
+  'id' | 'handle'
 > & {
   tier2ChildCategories?: StorefrontAPI.Maybe<{
     references?: StorefrontAPI.Maybe<{
       nodes: Array<
-        Pick<StorefrontAPI.Metaobject, 'id'> & {
+        Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
           name?: StorefrontAPI.Maybe<
             Pick<StorefrontAPI.MetaobjectField, 'value'>
           >;
@@ -386,11 +386,11 @@ export type HardwareCategoryFieldsFragment = {
   tier1ChildCategories?: StorefrontAPI.Maybe<{
     references?: StorefrontAPI.Maybe<{
       nodes: Array<
-        Pick<StorefrontAPI.Metaobject, 'id'> & {
+        Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
           tier2ChildCategories?: StorefrontAPI.Maybe<{
             references?: StorefrontAPI.Maybe<{
               nodes: Array<
-                Pick<StorefrontAPI.Metaobject, 'id'> & {
+                Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
                   name?: StorefrontAPI.Maybe<
                     Pick<StorefrontAPI.MetaobjectField, 'value'>
                   >;
@@ -430,11 +430,11 @@ export type GetCollectionsQuery = {
     tier1ChildCategories?: StorefrontAPI.Maybe<{
       references?: StorefrontAPI.Maybe<{
         nodes: Array<
-          Pick<StorefrontAPI.Metaobject, 'id'> & {
+          Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
             tier2ChildCategories?: StorefrontAPI.Maybe<{
               references?: StorefrontAPI.Maybe<{
                 nodes: Array<
-                  Pick<StorefrontAPI.Metaobject, 'id'> & {
+                  Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
                     name?: StorefrontAPI.Maybe<
                       Pick<StorefrontAPI.MetaobjectField, 'value'>
                     >;
@@ -523,7 +523,7 @@ interface GeneratedQueryTypes {
     return: GetCollectionsWithProductsQuery;
     variables: GetCollectionsWithProductsQueryVariables;
   };
-  '#graphql\n  fragment CoreCategoryFields on Metaobject {\n    id\n    name: field(key: "name") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            id\n            url\n          }\n        }\n      }\n    }\n  }\n\n  fragment Tier2CategoryFields on Metaobject {\n    ...CoreCategoryFields\n  }\n\n  fragment Tier1CategoryFields on Metaobject {\n    ...CoreCategoryFields\n    tier2ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier2CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  fragment HardwareCategoryFields on Metaobject {\n    tier1ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier1CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  query getCollections {\n    categories: metaobject(\n      handle: {handle: "Hardware", type: "category_metaobject"}\n    ) {\n      ...HardwareCategoryFields\n    }\n  }\n': {
+  '#graphql\n  fragment CoreCategoryFields on Metaobject {\n    id\n    handle\n    name: field(key: "name") {\n      value\n    }\n    image: field(key: "image") {\n      reference {\n        ... on MediaImage {\n          image {\n            id\n            url\n          }\n        }\n      }\n    }\n  }\n\n  fragment Tier2CategoryFields on Metaobject {\n    ...CoreCategoryFields\n  }\n\n  fragment Tier1CategoryFields on Metaobject {\n    ...CoreCategoryFields\n    tier2ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier2CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  fragment HardwareCategoryFields on Metaobject {\n    tier1ChildCategories: field(key: "children_categories") {\n      references(first: 100) {\n        nodes {\n          ... on Metaobject {\n            ...Tier1CategoryFields\n          }    \n        }\n      }\n    }\n  }\n\n  query getCollections {\n    categories: metaobject(\n      handle: {handle: "Hardware", type: "category_metaobject"}\n    ) {\n      ...HardwareCategoryFields\n    }\n  }\n': {
     return: GetCollectionsQuery;
     variables: GetCollectionsQueryVariables;
   };

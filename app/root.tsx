@@ -10,11 +10,14 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
+  Link,
 } from '@remix-run/react';
 import favicon from '~/assets/favicon.svg';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
+import {Aside} from './components/layout/Aside';
+import {CartAside, CartToggle} from './components/header/CartHeader';
 
 export type RootLoader = typeof loader;
 
@@ -132,6 +135,8 @@ export function Layout({children}: {children?: React.ReactNode}) {
   const nonce = useNonce();
   const data = useRouteLoaderData<RootLoader>('root');
 
+  const cart = data?.cart ?? Promise.resolve(null);
+
   return (
     <html lang="en">
       <head>
@@ -141,19 +146,44 @@ export function Layout({children}: {children?: React.ReactNode}) {
         <Links />
       </head>
       <body>
-        {data ? (
-          <Analytics.Provider
-            cart={data.cart}
-            shop={data.shop}
-            consent={data.consent}
-          >
-            {children}
-          </Analytics.Provider>
-        ) : (
-          children
-        )}
-        <ScrollRestoration nonce={nonce} />
-        <Scripts nonce={nonce} />
+        <Aside.Provider>
+          <CartAside cart={cart} />
+          <div style={{padding: 15, display: 'flex', flexDirection: 'column'}}>
+            <header
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 15,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Link to="/">
+                <h1>McMcMc</h1>
+              </Link>
+              <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
+                <div>Sign In</div>
+                <div>Search</div>
+                <CartToggle cart={cart} />
+              </div>
+            </header>
+            <main>
+              {data ? (
+                <Analytics.Provider
+                  cart={data.cart}
+                  shop={data.shop}
+                  consent={data.consent}
+                >
+                  {children}
+                </Analytics.Provider>
+              ) : (
+                children
+              )}
+              <ScrollRestoration nonce={nonce} />
+              <Scripts nonce={nonce} />
+            </main>
+          </div>
+        </Aside.Provider>
       </body>
     </html>
   );

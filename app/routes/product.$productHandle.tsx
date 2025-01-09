@@ -36,16 +36,8 @@ async function loadCriticalData({context, params}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs): {
-  cart: Promise<CartReturn | null>;
-  isLoggedIn: Promise<boolean>;
-} {
-  const {customerAccount, cart} = context;
-
-  return {
-    cart: cart.get(),
-    isLoggedIn: customerAccount.isLoggedIn(),
-  };
+function loadDeferredData({context}: LoaderFunctionArgs): {} {
+  return {};
 }
 
 const FIXED_IMAGE_SIZE = 75;
@@ -53,87 +45,61 @@ const FIXED_IMAGE_SIZE = 75;
 const ProductPage = () => {
   const data = useLoaderData<typeof loader>();
   return (
-    <Aside.Provider>
-      <CartAside cart={data.cart} />
-      <div style={{padding: 15, display: 'flex', flexDirection: 'column'}}>
-        <header
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 15,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <h1>McMcMc</h1>
-          <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
-            <div>Sign In</div>
-            <div>Search</div>
-            <CartToggle cart={data.cart} />
-          </div>
-        </header>
-        <main>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 15,
-              gridTemplateColumns: '200px 1fr',
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: 'lightgrey',
-                padding: 15,
-                width: '200px',
-              }}
-            />
-            <div>
-              <h2>{data.product?.product.title}</h2>
-              <p>{data.product?.product.description}</p>
-              <div>
-                {data.product?.product.images.nodes.map((image) => {
-                  return (
-                    <Image
-                      data={{url: image.url}}
-                      width={FIXED_IMAGE_SIZE}
-                      height={FIXED_IMAGE_SIZE}
-                      style={{filter: 'grayscale(100%)'}}
-                    />
-                  );
-                })}
-              </div>
-              <h4>Variants</h4>
-              <table style={{display: 'table-header-group'}}>
-                <thead>
-                  <td>Variant</td>
-                  <td>Price</td>
-                </thead>
-                <tbody>
-                  {data.product?.product.variants.nodes.map((variant: any) => {
-                    return (
-                      <tr key={variant.id}>
-                        <td>{variant.title}</td>
-                        <td>
-                          {parseFloat(variant.price.amount).toLocaleString(
-                            'en-US',
-                            {
-                              style: 'currency',
-                              currency: 'USD',
-                              minimumFractionDigits: 2,
-                            },
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </main>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 15,
+        gridTemplateColumns: '200px 1fr',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'lightgrey',
+          padding: 15,
+          width: '200px',
+        }}
+      />
+      <div>
+        <h2>{data.product?.product.title}</h2>
+        <p>{data.product?.product.description}</p>
+        <div>
+          {data.product?.product.images.nodes.map((image) => {
+            return (
+              <Image
+                data={{url: image.url}}
+                width={FIXED_IMAGE_SIZE}
+                height={FIXED_IMAGE_SIZE}
+                style={{filter: 'grayscale(100%)'}}
+              />
+            );
+          })}
+        </div>
+        <h4>Variants</h4>
+        <table style={{display: 'table-header-group'}}>
+          <thead>
+            <td>Variant</td>
+            <td>Price</td>
+          </thead>
+          <tbody>
+            {data.product?.product.variants.nodes.map((variant: any) => {
+              return (
+                <tr key={variant.id}>
+                  <td>{variant.title}</td>
+                  <td>
+                    {parseFloat(variant.price.amount).toLocaleString('en-US', {
+                      style: 'currency',
+                      currency: 'USD',
+                      minimumFractionDigits: 2,
+                    })}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-    </Aside.Provider>
+    </div>
   );
 };
 

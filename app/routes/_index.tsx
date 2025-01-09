@@ -35,49 +35,18 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs): {
-  cart: Promise<CartReturn | null>;
-  isLoggedIn: Promise<boolean>;
-} {
-  const {customerAccount, cart} = context;
-
-  return {
-    cart: cart.get(),
-    isLoggedIn: customerAccount.isLoggedIn(),
-  };
+function loadDeferredData({context}: LoaderFunctionArgs): {} {
+  return {};
 }
 
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
   return (
-    <Aside.Provider>
-      <CartAside cart={data.cart} />
-      <div style={{padding: 15, display: 'flex', flexDirection: 'column'}}>
-        <header
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 15,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <h1>McMcMc</h1>
-          <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
-            <div>Sign In</div>
-            <div>Search</div>
-            <CartToggle cart={data.cart} />
-          </div>
-        </header>
-        <main>
-          <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
-            <Categories categories={data.categories} />
-            <div style={{borderLeft: '1px solid grey'}} />
-            <AllCategories categories={data.categories} />
-          </div>
-        </main>
-      </div>
-    </Aside.Provider>
+    <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
+      <Categories categories={data.categories} />
+      <div style={{borderLeft: '1px solid grey'}} />
+      <AllCategories categories={data.categories} />
+    </div>
   );
 }
 
