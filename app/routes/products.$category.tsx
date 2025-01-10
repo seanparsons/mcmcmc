@@ -23,7 +23,6 @@ export async function loader(args: LoaderFunctionArgs) {
  */
 async function loadCriticalData({context, params}: LoaderFunctionArgs) {
   const {category} = params;
-  console.log('category', category);
   const collectionFromCategory = await context.storefront.query(
     COLLECTION_HANDLE_FROM_CATEGORY,
     {
@@ -56,7 +55,6 @@ const FIXED_IMAGE_SIZE = 75;
 
 const ProductsPage = () => {
   const data = useLoaderData<typeof loader>();
-  console.log('data.productsFromCategory', data.productsFromCategory);
   const collection = data.productsFromCategory.collection;
   return (
     <div

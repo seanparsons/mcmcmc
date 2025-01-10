@@ -226,7 +226,6 @@ export function AllCategories({
   categories: any;
   title: string | null;
 }) {
-  console.log('categories', categories);
   return (
     <div>
       {title == null ? null : (
