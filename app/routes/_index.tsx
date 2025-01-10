@@ -154,8 +154,14 @@ function Tier1Category({tier1Category}: any) {
   const description = getDescription(tier1Category.description);
   return (
     <div
+      data-testid="tier1-category"
       key={tier1Category.id}
-      style={{display: 'flex', flexDirection: 'column', gap: 10}}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        width: 'fit-content',
+      }}
     >
       {tier1Category.tier2ChildCategories == null ? (
         <Link to={`/products/${tier1Category.handle}`}>
@@ -172,7 +178,7 @@ function Tier1Category({tier1Category}: any) {
                 flexDirection: 'row',
                 width: '400px',
                 minHeight: '100px',
-                padding: 2,
+                paddingTop: 10,
               }}
             >
               <Image
@@ -189,22 +195,16 @@ function Tier1Category({tier1Category}: any) {
           </div>
         </Link>
       ) : (
-        <span>{tailName(tier1Category.name.value)}</span>
+        <Link to={`/products/${tier1Category.handle}`}>
+          <span>{tailName(tier1Category.name.value)}</span>
+        </Link>
       )}
       <div
+        data-testid="tier2-categories"
         style={{
           display: 'flex',
           gap: 10,
-          flexDirection:
-            tier1Category.tier2ChildCategories == null ||
-            tier1Category.tier2ChildCategories.references.nodes.every(
-              (tier2Category) => {
-                return tier2Category.tier3ChildCategories == null;
-              },
-            )
-              ? 'row'
-              : 'column',
-          flexWrap: 'wrap',
+          flexFlow: 'row nowrap',
         }}
       >
         {tier1Category.tier2ChildCategories == null
@@ -226,6 +226,7 @@ export function AllCategories({
   categories: any;
   title: string | null;
 }) {
+  console.log('categories', categories);
   return (
     <div>
       {title == null ? null : (
@@ -235,8 +236,11 @@ export function AllCategories({
         </>
       )}
       <div
+        data-testid="all-categories"
         style={{
           display: 'flex',
+          gap: 10,
+          width: '80%',
           flexDirection:
             categories.categories.tier1ChildCategories == null ||
             categories.categories.tier1ChildCategories.references.nodes.every(
@@ -272,6 +276,13 @@ export const CATEGORIES_QUERY = `#graphql
     }
     description: field(key: "description") {
       value
+    }
+    collection: field(key: "collection") {
+      reference {
+        ... on Collection {
+          collectionHandle: handle
+        }
+      }
     }
     image: field(key: "image") {
       reference {

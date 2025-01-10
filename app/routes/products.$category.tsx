@@ -23,9 +23,18 @@ export async function loader(args: LoaderFunctionArgs) {
  */
 async function loadCriticalData({context, params}: LoaderFunctionArgs) {
   const {category} = params;
+  console.log('category', category);
+  const collectionFromCategory = await context.storefront.query(
+    COLLECTION_HANDLE_FROM_CATEGORY,
+    {
+      variables: {handle: category ?? 'hardware'},
+    },
+  );
+  const collectionHandle =
+    collectionFromCategory.metaobject.collection.reference.collectionHandle;
   const [productsFromCategory, subCategories] = await Promise.all([
     context.storefront.query(PRODUCTS_FROM_CATEGORY, {
-      variables: {query: `handle:${category}`},
+      variables: {handle: collectionHandle ?? 'hardware'},
     }),
     context.storefront.query(CATEGORIES_QUERY, {
       variables: {handle: category ?? 'hardware'},
@@ -47,6 +56,8 @@ const FIXED_IMAGE_SIZE = 75;
 
 const ProductsPage = () => {
   const data = useLoaderData<typeof loader>();
+  console.log('data.productsFromCategory', data.productsFromCategory);
+  const collection = data.productsFromCategory.collection;
   return (
     <div
       style={{
@@ -64,55 +75,51 @@ const ProductsPage = () => {
         }}
       />
       <div>
-        <AllCategories categories={data.subCategories} title={null} />
-
-        {data.productsFromCategory.collections.nodes.map((collection) => {
-          return (
-            <>
-              <h2>{collection.title}</h2>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                  gap: 15,
-                }}
-              >
-                {collection.products.nodes.map((product) => {
-                  return (
-                    <Link key={product.id} to={`/product/${product.handle}`}>
-                      <div
-                        style={{
-                          width: '400px',
-                          minHeight: '100px',
-                          border: '1px solid grey',
-                          padding: 3,
-                        }}
-                      >
-                        <span>{product.title}</span>
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: '75px 1fr',
-                            gap: 10,
-                          }}
-                        >
-                          <span style={{fontSize: 15}}>Image</span>
-                          <span
-                            style={{
-                              fontSize: 12,
-                            }}
-                          >
-                            {product.description.split('.')[0]}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </>
-          );
-        })}
+        <AllCategories
+          categories={data.subCategories}
+          title={collection.title}
+        />
+        <h2>{collection.title}</h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 15,
+          }}
+        >
+          {collection.products.nodes.map((product) => {
+            return (
+              <Link key={product.id} to={`/product/${product.handle}`}>
+                <div
+                  style={{
+                    width: '400px',
+                    minHeight: '100px',
+                    border: '1px solid grey',
+                    padding: 3,
+                  }}
+                >
+                  <span>{product.title}</span>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '75px 1fr',
+                      gap: 10,
+                    }}
+                  >
+                    <span style={{fontSize: 15}}>Image</span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                      }}
+                    >
+                      {product.description.split('.')[0]}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -121,16 +128,29 @@ const ProductsPage = () => {
 export default ProductsPage;
 
 const PRODUCTS_FROM_CATEGORY = `#graphql
-  query getProducts($query: String!) {
-  collections(first: 10, query: $query) {
-    nodes {
-      title
-      products(first: 30) {
-        nodes {
-          id
-          title
-          description
-          handle
+  query getProducts($handle: String!) {
+  collection(handle: $handle) {
+    title
+    handle
+    products(first: 30) {
+      nodes {
+        id
+        title
+        description
+        handle
+      }
+    }
+  }
+}`;
+
+const COLLECTION_HANDLE_FROM_CATEGORY = `#graphql
+query getCategoryCollectionHandle($handle: String!) {
+  metaobject(handle: {handle: $handle, type: "category_metaobject"}) {
+    handle
+    collection: field(key: "collection") {
+      reference {
+        ... on Collection {
+          collectionHandle: handle
         }
       }
     }
