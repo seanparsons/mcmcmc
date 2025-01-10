@@ -1,11 +1,5 @@
-import {useParams} from 'react-router-dom';
-import {useEffect, useState} from 'react';
-import {defer, LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Link, useLoaderData} from '@remix-run/react';
-import {Aside} from '~/components/layout/Aside';
-import {CartAside, CartToggle} from '~/components/header/CartHeader';
-import {CartReturn, Image} from '@shopify/hydrogen';
-import {AllCategories, CATEGORIES_QUERY} from './_index';
+import {defer, LoaderFunctionArgs} from '@remix-run/server-runtime';
 
 export async function loader(args: LoaderFunctionArgs) {
   // Start fetching non-critical data without blocking time to first byte
@@ -22,24 +16,13 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context, params}: LoaderFunctionArgs) {
-  const {category} = params;
-  const collectionFromCategory = await context.storefront.query(
-    COLLECTION_HANDLE_FROM_CATEGORY,
-    {
-      variables: {handle: category ?? 'hardware'},
-    },
-  );
-  const collectionHandle =
-    collectionFromCategory.metaobject?.collection?.reference?.collectionHandle;
-  const [productsFromCategory, subCategories] = await Promise.all([
-    context.storefront.query(PRODUCTS_FROM_CATEGORY, {
-      variables: {handle: collectionHandle ?? 'hardware'},
-    }),
-    context.storefront.query(CATEGORIES_QUERY, {
-      variables: {handle: category ?? 'hardware'},
+  const {searchTerm} = params;
+  const [productsFromSearch] = await Promise.all([
+    context.storefront.query(PRODUCTS_FROM_SEARCH, {
+      variables: {query: searchTerm ?? ''},
     }),
   ]);
-  return {productsFromCategory, subCategories};
+  return {productsFromSearch};
 }
 
 /**
@@ -53,9 +36,8 @@ function loadDeferredData({context}: LoaderFunctionArgs): {} {
 
 const FIXED_IMAGE_SIZE = 75;
 
-const ProductsPage = () => {
+const SearchPage = () => {
   const data = useLoaderData<typeof loader>();
-  const collection = data.productsFromCategory.collection;
   return (
     <div
       style={{
@@ -73,11 +55,6 @@ const ProductsPage = () => {
         }}
       />
       <div>
-        <AllCategories
-          categories={data.subCategories}
-          title={collection.title}
-        />
-        <h2>{collection.title}</h2>
         <div
           style={{
             display: 'grid',
@@ -85,7 +62,8 @@ const ProductsPage = () => {
             gap: 15,
           }}
         >
-          {collection.products.nodes.map((product) => {
+          {data.productsFromSearch.search.edges.map((productEdge) => {
+            const product = productEdge.node;
             return (
               <Link key={product.id} to={`/product/${product.handle}`}>
                 <div
@@ -123,32 +101,18 @@ const ProductsPage = () => {
   );
 };
 
-export default ProductsPage;
+export default SearchPage;
 
-const PRODUCTS_FROM_CATEGORY = `#graphql
-  query getProducts($handle: String!) {
-  collection(handle: $handle) {
-    title
-    handle
-    products(first: 30) {
-      nodes {
-        id
-        title
-        description
-        handle
-      }
-    }
-  }
-}`;
-
-const COLLECTION_HANDLE_FROM_CATEGORY = `#graphql
-query getCategoryCollectionHandle($handle: String!) {
-  metaobject(handle: {handle: $handle, type: "category_metaobject"}) {
-    handle
-    collection: field(key: "collection") {
-      reference {
-        ... on Collection {
-          collectionHandle: handle
+const PRODUCTS_FROM_SEARCH = `#graphql
+  query searchProducts($query: String!) {
+  search(query: $query, first: 20, types: PRODUCT) {
+    edges {
+      node {
+        ... on Product {
+          id
+          handle
+          title
+          description
         }
       }
     }

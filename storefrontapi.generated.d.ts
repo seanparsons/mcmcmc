@@ -567,6 +567,18 @@ export type GetCategoryCollectionHandleQuery = {
   >;
 };
 
+export type SearchProductsQueryVariables = StorefrontAPI.Exact<{
+  query: StorefrontAPI.Scalars['String']['input'];
+}>;
+
+export type SearchProductsQuery = {
+  search: {
+    edges: Array<{
+      node: Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title'>;
+    }>;
+  };
+};
+
 interface GeneratedQueryTypes {
   '#graphql\n  fragment Shop on Shop {\n    id\n    name\n    description\n    primaryDomain {\n      url\n    }\n    brand {\n      logo {\n        image {\n          url\n        }\n      }\n    }\n  }\n  query Header(\n    $country: CountryCode\n    $headerMenuHandle: String!\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      ...Shop\n    }\n    menu(handle: $headerMenuHandle) {\n      ...Menu\n    }\n  }\n  #graphql\n  fragment MenuItem on MenuItem {\n    id\n    resourceId\n    tags\n    title\n    type\n    url\n  }\n  fragment ChildMenuItem on MenuItem {\n    ...MenuItem\n  }\n  fragment ParentMenuItem on MenuItem {\n    ...MenuItem\n    items {\n      ...ChildMenuItem\n    }\n  }\n  fragment Menu on Menu {\n    id\n    items {\n      ...ParentMenuItem\n    }\n  }\n\n': {
     return: HeaderQuery;
@@ -595,6 +607,10 @@ interface GeneratedQueryTypes {
   '#graphql\nquery getCategoryCollectionHandle($handle: String!) {\n  metaobject(handle: {handle: $handle, type: "category_metaobject"}) {\n    handle\n    collection: field(key: "collection") {\n      reference {\n        ... on Collection {\n          collectionHandle: handle\n        }\n      }\n    }\n  }\n}': {
     return: GetCategoryCollectionHandleQuery;
     variables: GetCategoryCollectionHandleQueryVariables;
+  };
+  '#graphql\n  query searchProducts($query: String!) {\n  search(query: $query, first: 20, types: PRODUCT) {\n    edges {\n      node {\n        ... on Product {\n          id\n          handle\n          title\n        }\n      }\n    }\n  }\n}': {
+    return: SearchProductsQuery;
+    variables: SearchProductsQueryVariables;
   };
 }
 

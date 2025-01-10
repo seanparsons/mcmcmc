@@ -18,6 +18,7 @@ import appStyles from '~/styles/app.css?url';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import {Aside} from './components/layout/Aside';
 import {CartAside, CartToggle} from './components/header/CartHeader';
+import React from 'react';
 
 export type RootLoader = typeof loader;
 
@@ -137,6 +138,25 @@ export function Layout({children}: {children?: React.ReactNode}) {
 
   const cart = data?.cart ?? Promise.resolve(null);
 
+  const searchTermsRef = React.useRef('');
+
+  const searchTermChanged = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      searchTermsRef.current = event.target.value;
+    },
+    [searchTermsRef],
+  );
+
+  const searchForTerm = React.useCallback(() => {
+    window.location.href = `/search/${searchTermsRef.current}`;
+  }, [searchTermsRef]);
+
+  const searchFieldKeyDown = React.useCallback((event) => {
+    if (event.key === 'Enter') {
+      searchForTerm();
+    }
+  }, []);
+
   return (
     <html lang="en">
       <head>
@@ -161,9 +181,23 @@ export function Layout({children}: {children?: React.ReactNode}) {
               <Link to="/">
                 <h1>McMcMc</h1>
               </Link>
-              <div style={{display: 'flex', flexDirection: 'row', gap: 15}}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: 15,
+                  alignItems: 'center',
+                }}
+              >
+                <input
+                  type="search"
+                  onChange={searchTermChanged}
+                  onKeyDown={searchFieldKeyDown}
+                />
+                <button style={{height: '40px'}} onClick={searchForTerm}>
+                  Search
+                </button>
                 <div>Sign In</div>
-                <div>Search</div>
                 <CartToggle cart={cart} />
               </div>
             </header>
