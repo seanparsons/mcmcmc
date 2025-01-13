@@ -574,7 +574,10 @@ export type SearchProductsQueryVariables = StorefrontAPI.Exact<{
 export type SearchProductsQuery = {
   search: {
     edges: Array<{
-      node: Pick<StorefrontAPI.Product, 'id' | 'handle' | 'title'>;
+      node: Pick<
+        StorefrontAPI.Product,
+        'id' | 'handle' | 'title' | 'description'
+      >;
     }>;
   };
 };
@@ -608,7 +611,7 @@ interface GeneratedQueryTypes {
     return: GetCategoryCollectionHandleQuery;
     variables: GetCategoryCollectionHandleQueryVariables;
   };
-  '#graphql\n  query searchProducts($query: String!) {\n  search(query: $query, first: 20, types: PRODUCT) {\n    edges {\n      node {\n        ... on Product {\n          id\n          handle\n          title\n        }\n      }\n    }\n  }\n}': {
+  '#graphql\n  query searchProducts($query: String!) {\n  search(query: $query, first: 20, types: PRODUCT) {\n    edges {\n      node {\n        ... on Product {\n          id\n          handle\n          title\n          description\n        }\n      }\n    }\n  }\n}': {
     return: SearchProductsQuery;
     variables: SearchProductsQueryVariables;
   };
